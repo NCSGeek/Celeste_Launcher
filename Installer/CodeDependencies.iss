@@ -724,6 +724,38 @@ begin
   end;
 end;
 
+function Dependency_IsExactVCRedist_35211_Installed: Boolean;
+var
+  Version: String;
+begin
+  Result := False;
+  // Check MSI bundle key in registry
+  if RegQueryStringValue(
+       HKLM,
+       'SOFTWARE\Classes\Installer\Dependencies\VC,redist.x86,x86,14.44,bundle',
+       '',
+       Version) then
+  begin
+    Result := (Version = '14.44.35211.0');
+  end;
+end;
+
+procedure Dependency_AddVC2015_35211;
+begin
+  if not Dependency_IsExactVCRedist_35211_Installed then
+  begin
+    Dependency_Add(
+      'vc_redist.x86.exe',
+      '/install /quiet /norestart',
+      'Visual C++ 2015–2022 Redistributable (x86) 14.44.35211.0',
+      'https://aka.ms/vs/17/release/vc_redist.x86.exe',
+      '',
+      False,
+      False
+    );
+  end;
+end;
+
 [Files]
 #ifdef Dependency_Path_NetCoreCheck
 ; download netcorecheck.exe: https://www.nuget.org/packages/Microsoft.NET.Tools.NETCoreCheck.x86

@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Age of Empires Online"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.1"
 #define MyAppPublisher "Celeste"
 #define MyAppURL "https://projectceleste.com/"
 #define MyAppExeName "Celeste Launcher.exe"
@@ -67,7 +67,8 @@ begin
   Dependency_AddVC2010;
   Dependency_AddVC2015To2022;
   Dependency_AddDirectX;
-
+  Dependency_AddVC2015_35211;
+  Dependency_AddDirectX;
   Result := True;
 end;
 
