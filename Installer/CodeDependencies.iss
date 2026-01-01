@@ -726,36 +726,13 @@ end;
 
 function Dependency_IsExactVCRedist_35211_Installed: Boolean;
 var
-  Version: String;
   Major, Minor, Bld, Rbld: Cardinal;
+  Version: String;
 begin
   Result := False;
   
-  if RegQueryStringValue(HKLM,
-       'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
-       'Version',
-       Version) then
-  begin
-    // Version might have 'v' prefix, so check both formats
-    if (Version = '14.44.35211.0') or (Version = 'v14.44.35211.0') then
-    begin
-      Result := True;
-      Exit;
-    end;
-  end;
-  
-  if RegQueryStringValue(HKLM,
-       'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
-       'Version',
-       Version) then
-  begin
-    if (Version = '14.44.35211.0') or (Version = 'v14.44.35211.0') then
-    begin
-      Result := True;
-      Exit;
-    end;
-  end;
-  
+  // PRIMARY METHOD: Check DWORD values (most reliable!)
+  // Check Wow6432Node first (64-bit Windows with x86 runtime)
   if RegQueryDWordValue(HKLM,
        'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
        'Major', Major) and
@@ -770,6 +747,41 @@ begin
        'Rbld', Rbld) then
   begin
     if (Major = 14) and (Minor = 44) and (Bld = 35211) and (Rbld = 0) then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+  
+  // FALLBACK: Check regular path for 32-bit Windows
+  if RegQueryDWordValue(HKLM,
+       'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
+       'Major', Major) and
+     RegQueryDWordValue(HKLM,
+       'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
+       'Minor', Minor) and
+     RegQueryDWordValue(HKLM,
+       'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
+       'Bld', Bld) and
+     RegQueryDWordValue(HKLM,
+       'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
+       'Rbld', Rbld) then
+  begin
+    if (Major = 14) and (Minor = 44) and (Bld = 35211) and (Rbld = 0) then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+  
+  // SECONDARY METHOD: Check version string (handles trailing zeros)
+  if RegQueryStringValue(HKLM,
+       'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
+       'Version',
+       Version) then
+  begin
+    // Handle both 'v14.44.35211.0' and 'v14.44.35211.00' formats
+    if (Pos('v14.44.35211.', Version) = 1) or (Pos('14.44.35211.', Version) = 1) then
     begin
       Result := True;
       Exit;
