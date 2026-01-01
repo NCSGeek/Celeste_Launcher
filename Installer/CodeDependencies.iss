@@ -727,16 +727,53 @@ end;
 function Dependency_IsExactVCRedist_35211_Installed: Boolean;
 var
   Version: String;
+  Major, Minor, Bld, Rbld: Cardinal;
 begin
   Result := False;
-  // Check MSI bundle key in registry
-  if RegQueryStringValue(
-       HKLM,
-       'SOFTWARE\Classes\Installer\Dependencies\VC,redist.x86,x86,14.44,bundle',
-       '',
+  
+  if RegQueryStringValue(HKLM,
+       'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
+       'Version',
        Version) then
   begin
-    Result := (Version = '14.44.35211.0');
+    // Version might have 'v' prefix, so check both formats
+    if (Version = '14.44.35211.0') or (Version = 'v14.44.35211.0') then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+  
+  if RegQueryStringValue(HKLM,
+       'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
+       'Version',
+       Version) then
+  begin
+    if (Version = '14.44.35211.0') or (Version = 'v14.44.35211.0') then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+  
+  if RegQueryDWordValue(HKLM,
+       'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
+       'Major', Major) and
+     RegQueryDWordValue(HKLM,
+       'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
+       'Minor', Minor) and
+     RegQueryDWordValue(HKLM,
+       'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
+       'Bld', Bld) and
+     RegQueryDWordValue(HKLM,
+       'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
+       'Rbld', Rbld) then
+  begin
+    if (Major = 14) and (Minor = 44) and (Bld = 35211) and (Rbld = 0) then
+    begin
+      Result := True;
+      Exit;
+    end;
   end;
 end;
 

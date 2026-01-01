@@ -68,7 +68,6 @@ begin
   Dependency_AddVC2015To2022;
   Dependency_AddDirectX;
   Dependency_AddVC2015_35211;
-  Dependency_AddDirectX;
   Result := True;
 end;
 
