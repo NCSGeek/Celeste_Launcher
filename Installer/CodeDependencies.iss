@@ -724,15 +724,11 @@ begin
   end;
 end;
 
-function Dependency_IsExactVCRedist_35211_Installed: Boolean;
+function Dependency_IsUpdatedVCRedist_Installed: Boolean;
 var
   Major, Minor, Bld, Rbld: Cardinal;
-  Version: String;
 begin
   Result := False;
-  
-  // PRIMARY METHOD: Check DWORD values (most reliable!)
-  // Check Wow6432Node first (64-bit Windows with x86 runtime)
   if RegQueryDWordValue(HKLM,
        'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
        'Major', Major) and
@@ -741,19 +737,17 @@ begin
        'Minor', Minor) and
      RegQueryDWordValue(HKLM,
        'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
-       'Bld', Bld) and
-     RegQueryDWordValue(HKLM,
-       'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
-       'Rbld', Rbld) then
+       'Bld', Bld) then
   begin
-    if (Major = 14) and (Minor = 44) and (Bld = 35211) and (Rbld = 0) then
+    if (Major > 14) or
+       ((Major = 14) and (Minor > 44)) or
+       ((Major = 14) and (Minor = 44) and (Bld >= 35211)) then
     begin
       Result := True;
       Exit;
     end;
   end;
   
-  // FALLBACK: Check regular path for 32-bit Windows
   if RegQueryDWordValue(HKLM,
        'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
        'Major', Major) and
@@ -762,26 +756,11 @@ begin
        'Minor', Minor) and
      RegQueryDWordValue(HKLM,
        'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
-       'Bld', Bld) and
-     RegQueryDWordValue(HKLM,
-       'SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
-       'Rbld', Rbld) then
+       'Bld', Bld) then
   begin
-    if (Major = 14) and (Minor = 44) and (Bld = 35211) and (Rbld = 0) then
-    begin
-      Result := True;
-      Exit;
-    end;
-  end;
-  
-  // SECONDARY METHOD: Check version string (handles trailing zeros)
-  if RegQueryStringValue(HKLM,
-       'SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86',
-       'Version',
-       Version) then
-  begin
-    // Handle both 'v14.44.35211.0' and 'v14.44.35211.00' formats
-    if (Pos('v14.44.35211.', Version) = 1) or (Pos('14.44.35211.', Version) = 1) then
+    if (Major > 14) or
+       ((Major = 14) and (Minor > 44)) or
+       ((Major = 14) and (Minor = 44) and (Bld >= 35211)) then
     begin
       Result := True;
       Exit;
@@ -791,7 +770,7 @@ end;
 
 procedure Dependency_AddVC2015_35211;
 begin
-  if not Dependency_IsExactVCRedist_35211_Installed then
+  if not Dependency_IsUpdatedVCRedist_Installed then
   begin
     Dependency_Add(
       'vc_redist.x86.exe',
